@@ -10,19 +10,23 @@ app.post("/sticker", async (req, res) => {
   try {
     const {
       imageBase64,
-      author = "MaiSa",
-      pack = "MaiSa Bot WhatsApp Assistant Kawaii",
-      type = "crop",
-      quality = 90,
+      author: reqAuthor,
+      pack: reqPack,
+      type: reqType,
+      quality: reqQuality,
     } = req.body;
 
-    if (!imageBase64)
+    const author = reqAuthor || "MaiSa";
+    const pack = reqPack || "MaiSa Bot WhatsApp Assistant Kawaii";
+    const type = reqType || "crop";
+    const quality = reqQuality || 90;
+
+    if (!imageBase64) {
       return res.status(400).json({ error: "Mana data gambarnya jir" });
+    }
 
     const buffer = Buffer.from(imageBase64, "base64");
-
     const sticker = new Sticker(buffer, { author, pack, type, quality });
-
     const stickerBuffer = await sticker.toBuffer();
 
     res.setHeader("Content-Type", "image/webp");
