@@ -3,37 +3,44 @@ const { Sticker } = require("wa-sticker-formatter");
 
 const app = express();
 
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use(express.json({ limit: "100mb" }));
+app.use(
+  express.urlencoded({
+    limit: "100mb",
+    extended: true,
+  }),
+);
 
 app.post("/api/sticker", async (req, res) => {
   try {
-    const {
-      imageBase64,
-      author: reqAuthor,
-      pack: reqPack,
-      type: reqType,
-      quality: reqQuality,
-    } = req.body;
+    const { mediaBase64, pack, author, type, quality } = req.body;
 
-    const author = reqAuthor || "MaiSa";
-    const pack = reqPack || "MaiSa Bot WhatsApp Assistant Kawaii";
-    const type = reqType || "crop";
-    const quality = reqQuality || 90;
-
-    if (!imageBase64) {
-      return res.status(400).json({ error: "Mana data gambarnya jir" });
+    if (!mediaBase64) {
+      return res.status(400).json({
+        status: false,
+        message: "mediaBase64 wajib diisi",
+      });
     }
 
-    const buffer = Buffer.from(imageBase64, "base64");
-    const sticker = new Sticker(buffer, { author, pack, type, quality });
-    const stickerBuffer = await sticker.toBuffer();
+    const sticker = new Sticker(Buffer.from(mediaBase64, "base64"), {
+      pack: pack || "MaiSa",
+      author: author || "MaiSa Bot",
+      type: type || "crop",
+      quality: quality || 90,
+    });
+
+    const buffer = await sticker.toBuffer();
 
     res.setHeader("Content-Type", "image/webp");
-    return res.send(stickerBuffer);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Servernya error nich" });
+
+    return res.send(buffer);
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
   }
 });
 
