@@ -1,42 +1,47 @@
 const express = require("express");
+const multer = require("multer");
+const sharp = require("sharp");
 const { Sticker } = require("wa-sticker-formatter");
 
 const app = express();
 
-app.use(express.json({ limit: "100mb" }));
-app.use(
-  express.urlencoded({
-    limit: "100mb",
-    extended: true,
-  }),
-);
+sharp.cache(false);
 
-app.post("/api/sticker", async (req, res) => {
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 4.5 * 1024 * 1024,
+  },
+});
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.post("/api/sticker", upload.single("file"), async (req, res) => {
   try {
-    const { mediaBase64, pack, author, type, quality } = req.body;
-
-    if (!mediaBase64) {
+    if (!req.file) {
       return res.status(400).json({
         status: false,
-        message: "mediaBase64 wajib diisi",
+        message: "File media wajib diunggah",
       });
     }
 
-    const sticker = new Sticker(Buffer.from(mediaBase64, "base64"), {
+    const { pack, author, type, quality } = req.body;
+    const mediaBuffer = req.file.buffer;
+
+    const sticker = new Sticker(mediaBuffer, {
       pack: pack || "MaiSa",
       author: author || "MaiSa Bot",
       type: type || "crop",
-      quality: quality || 90,
+      quality: quality ? parseInt(quality) : 90,
     });
 
     const buffer = await sticker.toBuffer();
 
     res.setHeader("Content-Type", "image/webp");
-
     return res.send(buffer);
-  } catch (err) {
-    console.error(err);
 
+  } catch (err) {
     return res.status(500).json({
       status: false,
       message: err.message,
