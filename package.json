@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "express": "^5.2.1",
+    "sharp": "^0.35.3",
     "wa-sticker-formatter": "^4.4.4"
   }
 }
