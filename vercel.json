@@ -8,7 +8,6 @@
   ],
   "functions": {
     "api/index.js": {
-      "runtime": "@vercel/node",
       "includeFiles": "node_modules/ffmpeg-static/ffmpeg"
     }
   }
