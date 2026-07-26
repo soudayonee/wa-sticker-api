@@ -37,13 +37,14 @@ app.post("/api/sticker", upload.single("file"), async (req, res) => {
       author: author || "MaiSa Bot",
       type: type || "crop",
       quality: quality ? parseInt(quality) : 90,
+      width: 320,
+      height: 320,
     });
 
     const buffer = await sticker.toBuffer();
 
     res.setHeader("Content-Type", "image/webp");
     return res.send(buffer);
-
   } catch (err) {
     return res.status(500).json({
       status: false,
